@@ -1,0 +1,124 @@
+items = {
+    'A': {'name': 'Cola', 'category': 'Drinks', 'price': 1.50, 'stock': 5},
+    'B': {'name': 'Chips', 'category': 'Snacks', 'price': 1.75, 'stock': 8},
+    'C': {'name': 'Water', 'category': 'Drinks', 'price': 1.25, 'stock': 10},
+    'D': {'name': 'Chocolate', 'category': 'Snacks', 'price': 2.00, 'stock': 6},
+    'E': {'name': 'Coffee', 'category': 'Hot Drinks', 'price': 2.50, 'stock': 7},
+    'F': {'name': 'Sandwich', 'category': 'Lunch', 'price': 3.00, 'stock': 4}
+}
+
+
+suggestions = {
+    'A': ['Chips', 'Chocolate'],
+    'B': ['Cola', 'Water'],
+    'C': ['Chips', 'Coffee'],
+    'D': ['Cola', 'Coffee'],
+    'E': ['Chocolate', 'Sandwich'],
+    'F': ['Water', 'Chips']
+}
+
+
+def display_items():
+    print("Welcome to Elwalid Vending Machine!")
+    print("Please select an item:")
+
+    for key, item in items.items():
+        print(f"{key}. {item['name']} ({item['category']}) - ${item['price']:.2f} (Stock: {item['stock']})")
+
+
+def purchase_item(selection):
+    if selection in items and items[selection]['stock'] > 0:
+        selected_item = items[selection]
+        print(f"You have selected {selected_item['name']} ({selected_item['category']}).")
+        return selected_item
+    elif selection not in items:
+        print("Invalid selection. Please try again.")
+    else:
+        print("Sorry, the selected item is out of stock. Please choose another item.")
+    return None
+
+
+def suggest_items(selected_item):
+    if selected_item:
+        item_code = selected_item['category']
+        if item_code in suggestions:
+            suggested_items = suggestions[item_code]
+            print("You might also like:")
+            for item_code in suggested_items:
+                item = items.get(item_code, {})
+                print(
+                    f"- {item.get('name', 'Unknown')} ({item.get('category', 'Unknown')}) - ${item.get('price', 0):.2f}")
+
+
+def buy_additional_items():
+    items_selected = []
+    total_amount_due = 0
+
+    while input("Do you want to buy additional items? (yes/no): ").lower() == 'yes':
+        display_items()
+        additional_selection = input("Enter the item code you wish to purchase: ")
+        additional_item = purchase_item(additional_selection)
+        if additional_item:
+            items_selected.append(additional_item)
+            total_amount_due += additional_item['price']
+
+    return items_selected, total_amount_due
+
+def make_payment(amount_due):
+    while True:
+        try:
+            payment_method = input("Select a payment method (cash/card): ").lower()
+            if payment_method == 'cash':
+                payment = float(input(f"Please insert ${amount_due:.2f}: "))
+                return payment
+            elif payment_method == 'card':
+                card_balance = float(input("Enter the amount of money on the card: "))
+                if card_balance >= amount_due:
+                    print("Card payment processed.")
+                    return amount_due
+                else:
+                    print("Insufficient funds on the card. Please choose another payment method.")
+            else:
+                print("Invalid payment method. Please choose 'cash' or 'card'.")
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+
+
+
+def vending_machine():
+    display_items()
+
+    selection = input("Enter the item code you wish to purchase: ")
+
+    selected_item = purchase_item(selection)
+
+    if selected_item:
+
+        total_amount_due = selected_item['price']
+
+        additional_items, additional_amount_due = buy_additional_items()
+        total_amount_due += additional_amount_due
+
+        payment = make_payment(total_amount_due)
+
+        if payment >= total_amount_due:
+            change = payment - total_amount_due
+            print("Thank you for your purchase!")
+            print("Dispensing items:")
+            print(f"- {selected_item['name']} ({selected_item['category']})")
+            for item in additional_items:
+                print(f"- {item['name']} ({item['category']})")
+            print(f"Your change is ${change:.2f}.")
+
+
+            suggest_items(selected_item)
+
+            selected_item['stock'] -= 1
+            for item in additional_items:
+                item['stock'] -= 1
+        else:
+            print("Insufficient payment. Transaction canceled.")
+
+
+# Run the vending machine
+vending_machine()
